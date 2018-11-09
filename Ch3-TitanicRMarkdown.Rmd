@@ -1,0 +1,102 @@
+---
+title: "Chapter 3 Exercise 2: Titanic"
+author: "Mary Wojtas"
+date: "November 6, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+## (0) Load the data in RStudio
+```{r}
+library(readr)
+titanic_original <- read_csv("titanic_original.csv")
+newtitanic <- titanic_original
+```
+##(1) Port of embarkation: Find missing values and replace them with S
+```{r}
+which(is.na(newtitanic$embarked))
+print(newtitanic$embarked[169])
+newtitanic <- newtitanic %>% 
+  mutate(embarked = ifelse(is.na(embarked),"S",embarked))
+print(newtitanic$embarked[169])
+```
+Mary's old code:   
+
+for(i in 1:length(newtitanic\$embarked)){  
+  if(is.na(newtitanic\$embarked[[i]]) == TRUE){  
+    newtitanic\$embarked[[i]] <-c("S")}}  
+
+##(2) Age: Calculate the mean of the Age column and use that value to populate the missing values
+### 1st: Calculating the average Age
+```{r}
+avgage <- mean(newtitanic$age[1:1310], na.rm = TRUE)
+print(avgage)
+```
+### 2nd:  Use that value to populate the missing values in the Age column
+```{r}
+newtitanic <- newtitanic %>%
+  mutate(age = ifelse(is.na(age),avgage,age))
+```
+Other ways to populate the missing values in the age column?  
+1. You can drop the rows with the missing values  
+2. You can just populate with NA if they aren't already populated with NA  
+
+Mary's old code:  
+Convert avgage to a character because newtitanic\$age is a vector  
+
+avgage <- as.characer(avgage)  
+
+Next, replace the missing values with this new mean 
+
+for(i in 1:length(newtitanic\$age)){  
+  if(is.na(newtitanic\$age[[i]])== TRUE){  
+    newtitanic\$age[[i]] <- c(avgage)}}  
+
+##(3) Lifeboat: Fill empty values in the boat column with a dummy value: None
+```{r}
+newtitanic <- newtitanic %>%
+  mutate(boat = ifelse(is.na(boat), "NONE", boat))
+```
+
+##(4) Cabin: 
+Many passengers don't have a cabin number associated with them.  
+Does it make sense to fill missing cabin numbers with a value?  
+Maybe not.  This could be a category by which to classify survival.  
+What does the missing value mean?  
+It could mean any of the following:  
+* The person was a stow-away  
+* The person was part of the crew and not a passenger
+* The person was a passenger but didn't have a cabin assignment
+
+### Create a bew column "has_cabin_number" which has 1 if there is a cabin number, and 0 otherwise.
+```{r}
+newtitanic <- newtitanic %>%
+  mutate(has_cabin_number = ifelse(is.na(cabin), 0, 1))
+```
+
+Mary's old code:  
+
+for(i in 1:length(newtitanic\$has_cabin_number)){  
+  if(!is.na(newtitanic\$has_cabin_number[[i]]) == TRUE){  
+    newtitanic\$has_cabin_number[[i]] <- c("1")}}  
+
+for(i in 1:length(newtitanic\$has_cabin_number)){  
+  if(is.na(newtitanic\$has_cabin_number[[i]]) == TRUE){  
+    newtitanic\$has_cabin_number[[i]] <- c("0")}}  
+
+##(5) Output the cleaned up data sheet
+
+titanic_clean <- newtitanic  
+titanic_clean <- as.data.frame(titanic_clean)  
+titanic_clean <- write_csv(titanic_clean,"~/Documents/RProjects/Ch3_Exer2_Titanic/titanic_clean.csv")  
+
+
+
+
+
+
+
+
